@@ -1,0 +1,46 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 测试和覆盖率
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.reports/
+
+# 环境变量
+.env
+**/.env
+.env.local
+.env.*.local
+
+# 工作空间和临时文件
+workspace/
+temp/
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Local tooling artifacts
+codex-x86_64-pc-windows-msvc.exe
+
+# 输入文档（可选，根据需要调整）
+input/
+
+# 废弃文件
+garbage/
+
