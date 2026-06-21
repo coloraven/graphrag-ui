@@ -1,0 +1,32 @@
+services:
+  reggraph-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # 中国大陆默认加速源；海外环境可改为官方源或删除 build.args
+        PYTHON_IMAGE: docker.linkos.org/library/python:3.11-slim-bookworm
+        DEBIAN_MIRROR: mirrors.aliyun.com
+        PYPI_INDEX_URL: https://mirrors.aliyun.com/pypi/simple/
+        PYPI_TRUSTED_HOST: mirrors.aliyun.com
+    image: reggraph-assistant:latest
+    container_name: reggraph-assistant
+    ports:
+      - "${PORT:-8012}:${PORT:-8012}"
+    env_file:
+      - .env
+    environment:
+      BIND_HOST: "0.0.0.0"
+      PORT: "${PORT:-8012}"
+      CORS_ALLOW_ORIGINS: "${CORS_ALLOW_ORIGINS:-http://localhost:8012,http://127.0.0.1:8012}"
+      PYTHONPATH: /app/src
+    volumes:
+      # 配置与语料（持久化、可随时修改）
+      - ./.env:/app/.env:ro
+      - ./input:/app/input
+      - ./workspace:/app/workspace
+      - ./logs:/app/logs
+      # 前端与源码（可选覆盖镜像内文件，便于改 UI / 业务逻辑）
+      - ./frontend:/app/frontend
+      - ./src:/app/src
+    restart: unless-stopped

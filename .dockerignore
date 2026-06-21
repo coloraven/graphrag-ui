@@ -1,0 +1,34 @@
+# Git 与 IDE
+.git
+.gitignore
+.cursor
+.specstory
+.vscode
+.idea
+
+# Python 本地环境
+.venv
+__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+.reports
+
+# 运行时数据（通过 volume 挂载，不打包进镜像）
+.env
+.env.*
+input
+workspace
+logs
+garbage
+temp
+*.log
+*.tmp
+
+# 文档与工具
+*.md
+!README.md
+codex-x86_64-pc-windows-msvc.exe

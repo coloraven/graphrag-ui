@@ -24,10 +24,12 @@ htmlcov/
 
 # 工作空间和临时文件
 workspace/
+logs/
 temp/
 *.tmp
 *.log
 
+.specstory
 # IDE
 .vscode/
 .idea/

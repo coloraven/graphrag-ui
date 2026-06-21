@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Literal, cast
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -74,10 +75,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="GraphRAG-powered registration precheck assistant for enterprise registration and business-scope knowledge bases",
     )
 
+    cors_origins = [
+        origin.strip()
+        for origin in os.environ.get(
+            "CORS_ALLOW_ORIGINS",
+            "http://localhost:8012,http://127.0.0.1:8012",
+        ).split(",")
+        if origin.strip()
+    ]
+
     # 添加 CORS 中间件
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:8012", "http://127.0.0.1:8012"],
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

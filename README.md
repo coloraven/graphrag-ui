@@ -82,6 +82,81 @@ uv run reggraph-assistant serve
 
 访问 `http://localhost:8012/`
 
+## Docker 部署
+
+镜像内仅包含 Python 依赖与应用代码；配置、语料、索引产物、日志等均通过 volume 挂载，便于修改与持久化。
+
+### 1. 准备配置与目录
+
+```powershell
+Copy-Item .env.example .env
+# 编辑 .env，填写 API Key 等配置
+mkdir input, workspace, logs -Force
+```
+
+将知识文档放入 `input/`（支持子目录）。
+
+### 2. 构建并启动
+
+```bash
+docker compose up -d --build
+```
+
+访问 `http://localhost:8012/`（端口由 `.env` 中 `PORT` 决定）。
+
+### 3. 构建索引
+
+```bash
+docker compose run --rm reggraph-assistant index
+```
+
+### 4. 其他 CLI
+
+```bash
+docker compose run --rm reggraph-assistant status
+docker compose run --rm reggraph-assistant eval
+```
+
+### 挂载说明
+
+| 宿主机路径 | 容器路径 | 说明 |
+|-----------|---------|------|
+| `.env` | `/app/.env` | API 与运行配置（只读挂载） |
+| `input/` | `/app/input` | 原始语料 |
+| `workspace/` | `/app/workspace` | 归一化文档、GraphRAG 项目、索引产物、SQLite 状态 |
+| `logs/` | `/app/logs` | 应用日志 |
+| `frontend/` | `/app/frontend` | 前端静态资源（可改 UI 无需重建镜像） |
+| `src/` | `/app/src` | Python 源码（`PYTHONPATH` 优先加载，改代码后重启容器即可） |
+
+停止服务：`docker compose down`
+
+### 中国大陆构建加速
+
+`Dockerfile` 与 `docker-compose.yml` 已默认启用国内镜像：
+
+| 类型 | 默认源 | 说明 |
+|------|--------|------|
+| 基础镜像 | `docker.linkos.org` | Docker Hub 加速 |
+| Debian apt | `mirrors.aliyun.com` | 系统包 |
+| PyPI / uv | `mirrors.aliyun.com/pypi/simple` | Python 依赖与 `uv` 安装 |
+
+可改用清华 PyPI 镜像，在 `docker-compose.yml` 的 `build.args` 中修改：
+
+```yaml
+DEBIAN_MIRROR: mirrors.tuna.tsinghua.edu.cn
+PYPI_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+PYPI_TRUSTED_HOST: pypi.tuna.tsinghua.edu.cn
+```
+
+海外环境可改回官方源，例如：
+
+```yaml
+PYTHON_IMAGE: python:3.11-slim-bookworm
+DEBIAN_MIRROR: deb.debian.org
+PYPI_INDEX_URL: https://pypi.org/simple
+PYPI_TRUSTED_HOST: pypi.org
+```
+
 ## CLI 命令
 
 - `uv run reggraph-assistant serve`：启动 FastAPI 服务

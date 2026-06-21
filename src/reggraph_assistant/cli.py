@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -40,7 +41,8 @@ def main() -> None:
 
     settings = load_settings()
     if args.command == "serve":
-        uvicorn.run(create_app(settings), host="127.0.0.1", port=settings.port)
+        bind_host = os.environ.get("BIND_HOST", "127.0.0.1")
+        uvicorn.run(create_app(settings), host=bind_host, port=settings.port)
         return
     if args.command == "index":
         try:
