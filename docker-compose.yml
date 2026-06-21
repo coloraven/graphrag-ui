@@ -14,19 +14,19 @@ services:
     ports:
       - "${PORT:-8012}:${PORT:-8012}"
     env_file:
-      - .env
+      - path: config/.env
+        required: false
     environment:
       BIND_HOST: "0.0.0.0"
       PORT: "${PORT:-8012}"
       CORS_ALLOW_ORIGINS: "${CORS_ALLOW_ORIGINS:-http://localhost:8012,http://127.0.0.1:8012}"
-      PYTHONPATH: /app/src
     volumes:
-      # 配置与语料（持久化、可随时修改）
-      - ./.env:/app/.env:ro
+      # 目录不存在时 Docker 会自动创建；首次启动 entrypoint 会写入默认 config/.env
+      - ./config:/app/config
       - ./input:/app/input
       - ./workspace:/app/workspace
       - ./logs:/app/logs
-      # 前端与源码（可选覆盖镜像内文件，便于改 UI / 业务逻辑）
+      # 可选挂载：空目录不会破坏镜像内容（entrypoint 会从镜像备份恢复）
       - ./frontend:/app/frontend
       - ./src:/app/src
     restart: unless-stopped

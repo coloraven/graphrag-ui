@@ -88,10 +88,11 @@ uv run reggraph-assistant serve
 
 ### 1. 准备配置与目录
 
+首次启动时，若宿主机没有 `config/`、`input/` 等目录，Docker 会自动创建；`entrypoint` 会在 `config/.env` 写入默认配置模板，请编辑后填入 API Key。
+
 ```powershell
-Copy-Item .env.example .env
-# 编辑 .env，填写 API Key 等配置
-mkdir input, workspace, logs -Force
+# 可选：提前创建目录（不创建也会在首次 up 时自动生成）
+mkdir config, input, workspace, logs -Force
 ```
 
 将知识文档放入 `input/`（支持子目录）。
@@ -102,7 +103,17 @@ mkdir input, workspace, logs -Force
 docker compose up -d --build
 ```
 
-访问 `http://localhost:8012/`（端口由 `.env` 中 `PORT` 决定）。
+访问 `http://localhost:8012/`（端口由 `config/.env` 中 `PORT` 决定）。
+
+### 仅携带 compose 文件部署
+
+若部署目录里**只有** `docker-compose.yml`（没有源码、没有 `Dockerfile`），需使用已构建好的镜像，并去掉或注释 `build:` 段，仅保留 `image: reggraph-assistant:latest`。首次 `up` 后会在宿主机生成：
+
+- `config/.env`（默认模板，需填写 API Key）
+- `input/`、`workspace/`、`logs/`（空目录）
+- `frontend/`、`src/`（若为空，会从镜像内恢复代码到宿主机，便于后续修改）
+
+**注意**：bind mount 不会把容器内已有文件「自动导出」到宿主机；空目录挂载会盖住镜像内容。当前 `entrypoint` 已处理空 `src/`、`frontend/` 的情况。
 
 ### 3. 构建索引
 
@@ -121,12 +132,18 @@ docker compose run --rm reggraph-assistant eval
 
 | 宿主机路径 | 容器路径 | 说明 |
 |-----------|---------|------|
-| `.env` | `/app/.env` | API 与运行配置（只读挂载） |
+| `config/` | `/app/config` | 配置目录；首次启动生成 `config/.env` |
 | `input/` | `/app/input` | 原始语料 |
 | `workspace/` | `/app/workspace` | 归一化文档、GraphRAG 项目、索引产物、SQLite 状态 |
 | `logs/` | `/app/logs` | 应用日志 |
-| `frontend/` | `/app/frontend` | 前端静态资源（可改 UI 无需重建镜像） |
-| `src/` | `/app/src` | Python 源码（`PYTHONPATH` 优先加载，改代码后重启容器即可） |
+| `frontend/` | `/app/frontend` | 前端（空目录时从镜像恢复） |
+| `src/` | `/app/src` | 源码（空目录时从镜像恢复；开发时用 dev compose 覆盖） |
+
+本地改源码开发：
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
 
 停止服务：`docker compose down`
 

@@ -53,8 +53,12 @@ COPY src ./src
 RUN uv sync --frozen --no-dev --index-url "${PYPI_INDEX_URL}"
 
 COPY frontend ./frontend
+COPY .env.example ./.env.example
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+    && mkdir -p /app/.image_backup \
+    && cp -a /app/src /app/.image_backup/src \
+    && cp -a /app/frontend /app/.image_backup/frontend
 
 EXPOSE 8012
 
